@@ -54,8 +54,10 @@ mu = 0.001
 a = (u.dx(1) * v - u * mu * v.dx(0)) * dx
 
 
+
 # LHS for Heat Equation
 h = (u.dx(1) * v  + u.dx(0) * mu * v.dx(0)) * dx
+
 
 L = Constant(0.0) * v * dx
 
@@ -63,6 +65,17 @@ solve(h == L, sol1, bcs=[bc], restrict=True)
 
 
 def immersed_mesh(m, W_s, sol1, pos):
+    """
+    Perform the extract-reinsert algorithm using immersed mesh
+
+    param m: the original 1D mesh (unextruded dimension)
+    param W_s: the spatial finite element (FE associated with the original mesh)
+    param sol1: the function being extracted / reinserted
+    param pos: a string being either 'top' or 'bottom'
+
+    return u_1d: a 1d function being extracted out
+    return u_f: a 2D function being re-inserted into the mesh
+    """
     # Create the function space for the top of the extrusion
     Fs_imm = VectorFunctionSpace(m, 'CG', 1, dim=2)  
     x_f = Function(Fs_imm)  # Create the storer function in Fs_top
@@ -114,5 +127,8 @@ sol2 = Function(U_res)
 
 solve(h == L, sol2, bcs=[bc_renew], restrict=True)
 
-tripcolor(u_2d)
-plt.show()
+print(norm(sol2))
+
+#tripcolor(sol2)
+#plt.show()
+
