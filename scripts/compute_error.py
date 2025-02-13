@@ -15,9 +15,9 @@ n_layers = 2
 
 # The exact same set up as in the heat equation 
 
-m = UnitIntervalMesh(4)
-mesh_full = ExtrudedMesh(m, layers=n_layers, layer_height=0.5)
-mesh_half = ExtrudedMesh(m, layers=n_layers//2, layer_height=0.25)
+m = UnitIntervalMesh(1000)
+mesh_full = ExtrudedMesh(m, layers=2, layer_height=0.5)
+mesh_half = ExtrudedMesh(m, layers=1, layer_height=0.25)
 
 # Implement the solution space, where it uses CG for both spatial and time element
 
@@ -62,7 +62,7 @@ v_2 = TestFunction(V_half)
 u_init_1 = Function(U_res_full)
 u_init_2 = Function(U_res_half)
 
-
+x, = SpatialCoordinate(m)
 x_1, t_1 = SpatialCoordinate(mesh_full)
 x_2, t_2 = SpatialCoordinate(mesh_half)
 
@@ -77,7 +77,7 @@ bc_2 = DirichletBC(U_res_half, u_init_2, 'bottom')
 sol_1 = Function(U_full)
 sol_2_1 = Function(U_half)
 
-mu = 0.001
+mu = 0.00001
 # LHS for Linear Advection equation
 # a = (u.dx(1) * v - u * mu * v.dx(0)) * dx
 
@@ -92,9 +92,6 @@ L_2 = Constant(0.0) * v_2 * dx
 
 solve(h_1 == L_1, sol_1, bcs=[bc_1], restrict=True)
 solve(h_2 == L_2, sol_2_1, bcs=[bc_2], restrict=True)
-
-
-
 
 
 def immersed_mesh(m, W_s, sol1, pos, layer_height=0.5):
@@ -142,7 +139,6 @@ def immersed_mesh(m, W_s, sol1, pos, layer_height=0.5):
         u_f.dat.data_wo[:] = sol1.dat.data_ro
         return u_f
 
-    
 
 u_t = immersed_mesh(m, W_s, sol_2_1, 'top', layer_height=0.25)
 
@@ -164,4 +160,10 @@ solve(h_2 == L_2, sol_2_2, bcs=[bc_renew], restrict=True)
 res_full = immersed_mesh(m, W_s, sol_1, 'top', layer_height=0.5)
 res_half = immersed_mesh(m, W_s, sol_2_2, 'top', layer_height=0.25)
 
-print(errornorm(res_full, res_half))
+
+
+print(errornorm(res_full, res_half)) # compare the solution of two numerical methods
+
+# the analytical solution to the heaet equation with the given bc is cos(2*pi*x)*exp(-4*(pi**2)*mu*t)
+
+print(errornorm(cos(2*pi*x)*exp(-4*(pi**2)*mu*0.5), res_full))
