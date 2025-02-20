@@ -65,8 +65,6 @@ solve(h == L, sol1, bcs=[bc], restrict=True)
 
 
 
-
-
 Fs_top = VectorFunctionSpace(m, 'CG', 1, dim=2) # This is the function space for the top of the extrusion
 x_top = Function(Fs_top) # This is the storer function in Fs_top
 x, = SpatialCoordinate(m) # This is the spatial coordinate of x, since the top of extrusion should have same ordering with the original mesh
@@ -93,7 +91,7 @@ u_bot.dat.data_wo[:] = u_1d.dat.data_ro
 
 u_2d = Function(U_res)
 u_2d.interpolate(u_bot, allow_missing_dofs=True)
-breakpoint()
+
 
 # u_2d.dat.data_wo[:len(u_1d.dat.data_ro)] = u_1d.dat.data_ro
 

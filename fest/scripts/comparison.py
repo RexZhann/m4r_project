@@ -1,52 +1,8 @@
 from firedrake import *
 from firedrake.pyplot import tripcolor, plot
 import matplotlib.pyplot as plt
+from fest import immersed_mesh
 
-
-def immersed_mesh(m, W_s, sol1, pos, layer_height=0.5):
-    """
-    Perform the extract-reinsert algorithm using immersed mesh
-
-    param m: the original 1D mesh (unextruded dimension)
-    param W_s: the spatial finite element (FE associated with the original mesh)
-    param sol1: the function being extracted / reinserted
-    param pos: a string being either 'top' or 'bottom'
-
-    return u_1d: a 1d function being extracted out
-    return u_f: a 2D function being re-inserted into the mesh
-    """
-    # Create the function space for the top of the extrusion
-    Fs_imm = VectorFunctionSpace(m, 'CG', 1, dim=2)  
-    x_f = Function(Fs_imm)  # Create the storer function in Fs_top
-
-    # Get the spatial coordinate
-    x, = SpatialCoordinate(m)
-    
-    # Interpolate the storer with information of the pos
-    if pos == 'bottom':
-        x_f.interpolate(as_vector([x, 0]))
-    elif pos == 'top':
-        x_f.interpolate(as_vector([x, layer_height]))
-    else:
-        raise NotImplementedError
-
-    # Create the immersed mesh (1D mesh in 2D space)
-    m_imm = Mesh(x_f)
-    # Define the function space on the immersed mesh and interpolate the solution
-    UFs_imm = FunctionSpace(m_imm, W_s)
-    u_f = Function(UFs_imm)
-    if pos == 'top':
-        u_f.interpolate(sol1, allow_missing_dofs=True)
-        # Define the function space on the original mesh
-        UFs_1D = FunctionSpace(m, W_s)
-        u_1d = Function(UFs_1D)
-        
-        u_1d.dat.data_wo[:] = u_f.dat.data_ro
-
-        return u_1d
-    else:
-        u_f.dat.data_wo[:] = sol1.dat.data_ro
-        return u_f
 
 def get_spacetime_errornorm(sp_res, t_res, t_end, deg, bc_expr, h, L, exact, num_iter):
     '''
@@ -131,19 +87,21 @@ error_list_step_sp = [get_spacetime_errornorm(sp, 1, 0.25, 3, bc_expr, h, L, exa
 
 '''
 
-t_list = [2, 4, 6, 8, 10, 12]
+def demo_compare_errornorm():
+    t_list = [2, 4, 6, 8, 10, 12]
 
-error_list_full_t = [get_spacetime_errornorm(50, t, 0.5, 3, bc_expr, h, L, exact, 1) for t in t_list]
-error_list_step_t = [get_spacetime_errornorm(50, 1, 0.5, 3, bc_expr, h, L, exact, t) for t in t_list]
+    error_list_full_t = [get_spacetime_errornorm(50, t, 0.5, 3, bc_expr, h, L, exact, 1) for t in t_list]
+    error_list_step_t = [get_spacetime_errornorm(50, 1, 0.5, 3, bc_expr, h, L, exact, t) for t in t_list]
 
-plt.loglog(error_list_full_t, error_list_step_t)
-plt.title('Errornorm with Exact Solution of One-shot Approach vs Step-by-Step Approach (time)')
-plt.xlabel('time resolution of solve at once')
-plt.ylabel('time resolution of solve by step')
+    plt.loglog(error_list_full_t, error_list_step_t)
+    plt.title('Errornorm with Exact Solution of One-shot Approach vs Step-by-Step Approach (time)')
+    plt.xlabel('time resolution of solve at once')
+    plt.ylabel('time resolution of solve by step')
 
-for i, (x, y) in enumerate(zip(error_list_full_t, error_list_step_t)):
-    plt.text(x, y, str(t_list[i]))
+    for i, (x, y) in enumerate(zip(error_list_full_t, error_list_step_t)):
+        plt.text(x, y, str(t_list[i]))
 
-plt.show()
+    plt.show()
 
-
+if __name__ == '__main__':
+    demo_compare_errornorm()

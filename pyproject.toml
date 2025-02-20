@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "space-time finite element"
+name = "fest" 
 version = "2024.0"
 description="""bla bla bla"""
 license = "MIT"

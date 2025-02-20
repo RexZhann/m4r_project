@@ -10,6 +10,7 @@ numerical operations involved are essentially the same
 from firedrake import *
 from firedrake.pyplot import tripcolor, plot
 import matplotlib.pyplot as plt
+from fest import immersed_mesh
 
 n_layers = 2
 
@@ -94,51 +95,6 @@ solve(h_1 == L_1, sol_1, bcs=[bc_1], restrict=True)
 solve(h_2 == L_2, sol_2_1, bcs=[bc_2], restrict=True)
 
 
-def immersed_mesh(m, W_s, sol1, pos, layer_height=0.5):
-    """
-    Perform the extract-reinsert algorithm using immersed mesh
-
-    param m: the original 1D mesh (unextruded dimension)
-    param W_s: the spatial finite element (FE associated with the original mesh)
-    param sol1: the function being extracted / reinserted
-    param pos: a string being either 'top' or 'bottom'
-
-    return u_1d: a 1d function being extracted out
-    return u_f: a 2D function being re-inserted into the mesh
-    """
-    # Create the function space for the top of the extrusion
-    Fs_imm = VectorFunctionSpace(m, 'CG', 1, dim=2)  
-    x_f = Function(Fs_imm)  # Create the storer function in Fs_top
-
-    # Get the spatial coordinate
-    x, = SpatialCoordinate(m)
-    
-    # Interpolate the storer with information of the pos
-    if pos == 'bottom':
-        x_f.interpolate(as_vector([x, 0]))
-    elif pos == 'top':
-        x_f.interpolate(as_vector([x, layer_height]))
-    else:
-        raise NotImplementedError
-
-    # Create the immersed mesh (1D mesh in 2D space)
-    m_imm = Mesh(x_f)
-    # Define the function space on the immersed mesh and interpolate the solution
-    UFs_imm = FunctionSpace(m_imm, W_s)
-    u_f = Function(UFs_imm)
-    if pos == 'top':
-        u_f.interpolate(sol1, allow_missing_dofs=True)
-        # Define the function space on the original mesh
-        UFs_1D = FunctionSpace(m, W_s)
-        u_1d = Function(UFs_1D)
-        
-        u_1d.dat.data_wo[:] = u_f.dat.data_ro
-
-        return u_1d
-    else:
-        u_f.dat.data_wo[:] = sol1.dat.data_ro
-        return u_f
-
 
 u_t = immersed_mesh(m, W_s, sol_2_1, 'top', layer_height=0.25)
 
@@ -151,7 +107,7 @@ u_2d.interpolate(u_b, allow_missing_dofs=True)
 
 bc_renew = DirichletBC(U_res_half, u_2d, 'bottom')
 
-sol_2_2 = Function(U_res_half)
+sol_2_2 = Function(U_half)
 
 solve(h_2 == L_2, sol_2_2, bcs=[bc_renew], restrict=True)
 

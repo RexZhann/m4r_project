@@ -45,7 +45,7 @@ x, t = SpatialCoordinate(mesh)
 u_init.interpolate(cos(2*pi*x))
 
 # bc = DirichletBC(U_res, cos(pi*x), 'bottom')
-bc = DirichletBC(U_res, u_init, 'bottom')
+bc = DirichletBC(U_res, u_init, 'bottom') 
 
 sol1 = Function(U)
 
@@ -64,7 +64,7 @@ L = Constant(0.0) * v * dx
 solve(h == L, sol1, bcs=[bc], restrict=True)
 
 
-def immersed_mesh(m, W_s, sol1, pos):
+def immersed_mesh(m, W_s, sol1, pos, layer_height=0.5):
     """
     Perform the extract-reinsert algorithm using immersed mesh
 
@@ -82,27 +82,26 @@ def immersed_mesh(m, W_s, sol1, pos):
 
     # Get the spatial coordinate
     x, = SpatialCoordinate(m)
-    
+
     # Interpolate the storer with information of the pos
     if pos == 'bottom':
         x_f.interpolate(as_vector([x, 0]))
     elif pos == 'top':
-        x_f.interpolate(as_vector([x, 20]))
+        x_f.interpolate(as_vector([x, layer_height]))
     else:
         raise NotImplementedError
 
     # Create the immersed mesh (1D mesh in 2D space)
     m_imm = Mesh(x_f)
-    
     # Define the function space on the immersed mesh and interpolate the solution
     UFs_imm = FunctionSpace(m_imm, W_s)
     u_f = Function(UFs_imm)
     if pos == 'top':
-        u_f.interpolate(sol1)
+        u_f.interpolate(sol1, allow_missing_dofs=True)
         # Define the function space on the original mesh
         UFs_1D = FunctionSpace(m, W_s)
         u_1d = Function(UFs_1D)
-        
+    
         u_1d.dat.data_wo[:] = u_f.dat.data_ro
 
         return u_1d
@@ -110,25 +109,27 @@ def immersed_mesh(m, W_s, sol1, pos):
         u_f.dat.data_wo[:] = sol1.dat.data_ro
         return u_f
 
-    
 
-u_t = immersed_mesh(m, W_s, sol1, 'top')
+def demo():
+    u_t = immersed_mesh(m, W_s, sol1, 'top')
 
-u_b = immersed_mesh(m, W_s, u_t, 'bottom')
+    u_b = immersed_mesh(m, W_s, u_t, 'bottom')
+
+    u_2d = Function(U_res)
+
+    u_2d.interpolate(u_b, allow_missing_dofs=True)
+
+    bc_renew = DirichletBC(U_res, u_2d, 'bottom')
+
+    sol2 = Function(U) # no need for U_res here
 
 
-u_2d = Function(U_res)
+    solve(h == L, sol2, bcs=[bc_renew], restrict=True)
 
-u_2d.interpolate(u_b, allow_missing_dofs=True)
+    print(norm(sol2))
 
-bc_renew = DirichletBC(U_res, u_2d, 'bottom')
+    #tripcolor(sol2)
+    #plt.show()
 
-sol2 = Function(U_res)
-
-solve(h == L, sol2, bcs=[bc_renew], restrict=True)
-
-print(norm(sol2))
-
-#tripcolor(sol2)
-#plt.show()
-
+if __name__ == '__main__':
+    demo()
