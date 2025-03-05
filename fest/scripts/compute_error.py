@@ -10,13 +10,13 @@ numerical operations involved are essentially the same
 from firedrake import *
 from firedrake.pyplot import tripcolor, plot
 import matplotlib.pyplot as plt
-from fest import immersed_mesh
+from fest import transfer
 
 n_layers = 2
 
 # The exact same set up as in the heat equation 
 
-m = UnitIntervalMesh(1000)
+m = UnitIntervalMesh(100)
 mesh_full = ExtrudedMesh(m, layers=2, layer_height=0.5)
 mesh_half = ExtrudedMesh(m, layers=1, layer_height=0.25)
 
@@ -78,7 +78,7 @@ bc_2 = DirichletBC(U_res_half, u_init_2, 'bottom')
 sol_1 = Function(U_full)
 sol_2_1 = Function(U_half)
 
-mu = 0.00001
+mu = 1e-5
 # LHS for Linear Advection equation
 # a = (u.dx(1) * v - u * mu * v.dx(0)) * dx
 
@@ -96,9 +96,9 @@ solve(h_2 == L_2, sol_2_1, bcs=[bc_2], restrict=True)
 
 
 
-u_t = immersed_mesh(m, W_s, sol_2_1, 'top', layer_height=0.25)
+u_t = transfer(m, W_s, sol_2_1, 'top', layer_height=0.25)
 
-u_b = immersed_mesh(m, W_s, u_t, 'bottom')
+u_b = transfer(m, W_s, u_t, 'bottom')
 
 
 u_2d = Function(U_res_half)
@@ -113,8 +113,8 @@ solve(h_2 == L_2, sol_2_2, bcs=[bc_renew], restrict=True)
 
 
 
-res_full = immersed_mesh(m, W_s, sol_1, 'top', layer_height=0.5)
-res_half = immersed_mesh(m, W_s, sol_2_2, 'top', layer_height=0.25)
+res_full = transfer(m, W_s, sol_1, 'top', layer_height=0.5)
+res_half = transfer(m, W_s, sol_2_2, 'top', layer_height=0.25)
 
 
 

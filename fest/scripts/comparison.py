@@ -1,7 +1,7 @@
 from firedrake import *
 from firedrake.pyplot import tripcolor, plot
 import matplotlib.pyplot as plt
-from fest import immersed_mesh
+from fest import transfer
 
 
 def get_spacetime_errornorm(sp_res, t_res, t_end, deg, bc_expr, h, L, exact, num_iter):
@@ -41,23 +41,24 @@ def get_spacetime_errornorm(sp_res, t_res, t_end, deg, bc_expr, h, L, exact, num
     x, = SpatialCoordinate(m)
     x_ex, t = SpatialCoordinate(mesh_ex)
 
-    u_init.interpolate(bc_expr(x_ex))
-    bc = DirichletBC(U_res, u_init, 'bottom')
-
-    sol_0 = Function(U)
     
 
+    sol_0 = Function(U)
+    u_2d = Function(U_res)
+    u_2d.interpolate(bc_expr(x_ex))
+    bc = DirichletBC(U_res, u_2d, 'bottom')
+
     sol = sol_0
-    bc_renew = bc
+    problem = LinearVariationalProblem(h(u, v), L(u,v), sol, bcs=[bc], restrict=True, constant_jacobian=True)
+    solver = LinearVariationalSolver(problem)
+
     for _ in range(num_iter):
 
-        solve(h(u, v) == L(u, v), sol, bcs=[bc_renew], restrict=True)
-        u_t = immersed_mesh(m, W_s, sol, 'top', layer_height=t_end/num_iter)
-        u_b = immersed_mesh(m, W_s, u_t, 'bottom')
+        solver.solve()
+        u_t = transfer(m, W_s, sol, 'top', layer_height=t_end/num_iter)
+        u_b = transfer(m, W_s, u_t, 'bottom')
 
-        u_2d = Function(U_res)
         u_2d.interpolate(u_b, allow_missing_dofs=True)
-        bc_renew = DirichletBC(U_res, u_2d, 'bottom')
     
     err = errornorm(exact(x, t_end), u_t)
 

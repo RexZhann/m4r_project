@@ -44,6 +44,8 @@ x, t = SpatialCoordinate(mesh)
 # Forming the boundary condition as cos(2pi * x), which is essentially the initial time condition
 u_init.interpolate(cos(2*pi*x))
 
+print(u_init.function_space)
+
 # bc = DirichletBC(U_res, cos(pi*x), 'bottom')
 bc = DirichletBC(U_res, u_init, 'bottom') 
 
