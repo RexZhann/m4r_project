@@ -22,11 +22,11 @@ V = FunctionSpace(mesh, V_el)
 
 # Restrict BC to bottom of solution space
 U_res = RestrictedFunctionSpace(U, boundary_set=['bottom']) 
-U_lgmap = U_res.topological.local_to_global_map(None)
+
 
 
 V_res = RestrictedFunctionSpace(V, boundary_set=['bottom']) # this changes nothing since DG elelments don't have node on boundary.
-V_lgmap = V_res.topological.local_to_global_map(None)
+
 
 
 
@@ -41,6 +41,7 @@ x, t = SpatialCoordinate(mesh)
 
 # Forming the boundary condition as cos(2pi * x), which is essentially the initial time condition
 u_init.interpolate(cos(2*pi*x))
+print(len(u_init.ufl_shape))
 
 # bc = DirichletBC(U_res, cos(pi*x), 'bottom')
 bc = DirichletBC(U_res, u_init, 'bottom')
