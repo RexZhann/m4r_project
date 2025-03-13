@@ -1,0 +1,4 @@
+firedrake==0.14.dev0
+matplotlib==3.10.1
+numpy==2.2.3
+pytest==8.3.4

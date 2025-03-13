@@ -11,7 +11,7 @@ An abstraction of finite element in space-time (FEST)
 
 ## About
 
-`FEST` is a Python-based implementation of a space-time finite element scheme. This project provides a framework for solving partial differential equations using finite element methods that consider both spatial and temporal dimensions simultaneously.
+`fest` is a Python-based implementation of a space-time finite element scheme. This project provides a framework for solving partial differential equations using finite element methods that consider both spatial and temporal dimensions simultaneously.
 
 ## Features
 
