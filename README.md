@@ -7,10 +7,7 @@ An abstraction of finite element in space-time (FEST)
 - [About](#about)
 - [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+
 
 ## About
 
