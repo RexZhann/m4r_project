@@ -2,6 +2,7 @@ from firedrake import *
 from firedrake.pyplot import tripcolor, plot 
 
 
+
 def transfer(m, W_s, sol1, pos, layer_height=0.5):
     """
     Perform the extract-reinsert algorithm using immersed mesh
@@ -236,7 +237,7 @@ def refine_spacetime_alternately(sp_init=10, t_init=10, t_end=0.5, deg=1,
 def refine_timespace_alternately(sp_init=10, t_init=10, t_end=0.5, deg=1,
                                  bc_expr=None, h=None, L=None, exact=None,
                                  num_iter_mode='step',  # or 'once'
-                                 inner_tol=0.1,       
+                                 inner_tol=0.001,       
                                  outer_tol=1e-12, 
                                  max_iter=30,
                                  max_inner_iter=5,
@@ -318,6 +319,8 @@ def refine_timespace_alternately(sp_init=10, t_init=10, t_end=0.5, deg=1,
             )
             rel_diff = abs(err - old_err)/abs(old_err)
 
+
+
             print(f"   Refine space: sp_res={sp_res}, old_err={old_err:.3e}, new_err={err:.3e}, rel_diff={rel_diff:.3f}")
 
             if return_inner:
@@ -350,7 +353,8 @@ def refine_timespace_alternately(sp_init=10, t_init=10, t_end=0.5, deg=1,
         sp_history.append(sp_res)
         t_history.append(t_res)
         err_history.append(err)
-        print(f"   Refine time:  t_res={t_res}, old_err={old_err:.3e}, new_err={err:.3e}")
+        conv_order_t = np.log(old_err/err) / np.log(2)
+        print(f"   Refine time:  t_res={t_res}, old_err={old_err:.3e}, new_err={err:.3e}, conv_rate={conv_order_t:.3f}")
 
 
         print(f"End of outer iteration {iteration}, final err={err:.3e}")
