@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from firedrake import *
-from fest import refine_spacetime_alternately, refine_timespace_alternately, refine_timespace_with_convergence
+from fest import refine_spacetime_alternately, refine_timespace_alternately
 
 mu = 0.0001
 
@@ -19,7 +19,7 @@ def exact(x, t):
 
 deg = 1
 
-sp_hist, t_hist, err_hist = refine_timespace_alternately(
+sp_hist, t_hist, err_hist, = refine_timespace_alternately(
     sp_init=10,
     t_init=10,
     t_end=0.5,
@@ -36,10 +36,11 @@ sp_hist, t_hist, err_hist = refine_timespace_alternately(
 
 
 fig, ax = plt.subplots(1, 1, figsize=(7, 5))
-ax.loglog([1/n for n in sp_hist], err_hist, marker='o')
+ax.loglog([1/n for n in sp_hist], err_hist, marker='o') # use different markers for different lines (not just color)
 ax.set_xlabel("dt")
-ax.set_ylabel("Error (log scale)")
-ax.set_title(f"Alternating refinement of space/time until error < 1e-12(deg {deg})")
+ax.set_ylabel("Error ")
+ax.set_title(f"Convergence Rate of Errors in Time d until error < 1e-12 (degree {deg})") # display degrees on legend, put title info in captions
+# put space and time plots next to each other (text size same as report text size)
 ax.grid(True, which='both', linestyle='--', alpha=0.5)
 
 

@@ -1,5 +1,6 @@
 from firedrake import *
 from firedrake.pyplot import tripcolor, plot 
+import numpy as np
 
 
 
@@ -353,8 +354,9 @@ def refine_timespace_alternately(sp_init=10, t_init=10, t_end=0.5, deg=1,
         sp_history.append(sp_res)
         t_history.append(t_res)
         err_history.append(err)
-        conv_order_t = np.log(old_err/err) / np.log(2)
-        print(f"   Refine time:  t_res={t_res}, old_err={old_err:.3e}, new_err={err:.3e}, conv_rate={conv_order_t:.3f}")
+        # conv_rate = (np.log(err_history[-2]/err_history[-1])/np.log(t_history[-1]/t_history[-2]))
+        conv_rate = np.log(old_err/err) / np.log(2)
+        print(f"   Refine time:  t_res={t_res}, old_err={old_err:.3e}, new_err={err:.3e}, conv_rate={conv_rate:.3f}")
 
 
         print(f"End of outer iteration {iteration}, final err={err:.3e}")
@@ -362,4 +364,4 @@ def refine_timespace_alternately(sp_init=10, t_init=10, t_end=0.5, deg=1,
 
     print(f"\nRefinement finished after {iteration} outer iterations.")
     print(f"Final: sp_res={sp_res}, t_res={t_res}, err={err:.6g}")
-    return sp_history, t_history, err_history
+    return sp_history, t_history, err_history, conv_rate
